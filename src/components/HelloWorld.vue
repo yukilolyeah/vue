@@ -14,7 +14,7 @@
     <button @click="minus(operand1, operand2)">-</button>
     <button @click="multiply(operand1, operand2)">*</button>
     <button
-      v-if="operand1 !== 0 && operand2 !== 0"
+      v-if="operand2 !== 0"
       @click="divide(operand1, operand2)"
     >
       /
