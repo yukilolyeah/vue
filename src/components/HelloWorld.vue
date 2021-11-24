@@ -10,99 +10,57 @@
     <input v-model.number="operand2" type="number" />
     = {{ result }}
     <br />
-    <button @click="result = operand1 + operand2">+</button>
-    <button @click="minus(operand1, operand2)">-</button>
-    <button @click="multiply(operand1, operand2)">*</button>
-    <button
-      v-if="operand1 !== 0 && operand2 !== 0"
-      @click="divide(operand1, operand2)"
-    >
-      /
-    </button>
-    <button v-else disabled>/</button>
+    <div class="display">
+      fib(<input v-model.number="operand1" type="number" />) fib(<input
+        v-model.number="operand2"
+        type="number"
+      />) = {{ fibResult }}
+    </div>
+    <!-- <button @click="calculate('+')">+</button>
+    <button @click="calculate('-')">-</button>
+    <button @click="calculate('*')">*</button>
+    <button @click="calculate('/')">/</button> -->
+    <div class="keyboard">
+      <button
+        v-for="operand in operands"
+        v-bind:key="operand"
+        v-bind:title="operand"
+        v-bind:disabled="operand1 === '' || operand2 === ''"
+        @click="calculate(operand)"
+      >
+        {{ operand }}
+      </button>
+    </div>
+    <div class="strange-message">
+      <template v-if="result < 0">Получилось отрицательное число</template>
+      <template v-else-if="result < 100">Результат в первой сотне</template>
+      <template v-else>Получилось слишком большое число</template>
+    </div>
+    <div>
+      <input type="checkbox" v-model="clicked" />
+      <label>Отобразить экранную клавиатуру</label><br />
+      <button
+        class="myCollection"
+        v-for="item in myCollection"
+        v-bind:key="item"
+        v-show="clicked"
+        @click="addNumber(item, picked)"
+      >
+        {{ item }}
+      </button>
+      <button @click="removeNumber(picked)">&#8592;</button>
+      <br />
+      <input type="radio" id="one" value="operand1" v-model="picked" />
+      <label for="one">Операнд 1</label>
+      <input type="radio" id="two" value="operand2" v-model="picked" />
+      <label for="two">Операнд 2</label>
+      <br />
+    </div>
+    <div v-if="error">Ошибка! {{ error }}</div>
+    <div class="logs">
+      <div v-for="(log, id) in logs" v-bind:key="id">{{ log }}</div>
+    </div>
     <h1>{{ msg }}</h1>
-    <p>
-      For a guide and recipes on how to configure / customize this project,<br />
-      check out the
-      <a href="https://cli.vuejs.org" target="_blank" rel="noopener"
-        >vue-cli documentation</a
-      >.
-    </p>
-    <h3>Installed CLI Plugins</h3>
-    <ul>
-      <li>
-        <a
-          href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-babel"
-          target="_blank"
-          rel="noopener"
-          >babel</a
-        >
-      </li>
-      <li>
-        <a
-          href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-eslint"
-          target="_blank"
-          rel="noopener"
-          >eslint</a
-        >
-      </li>
-    </ul>
-    <h3>Essential Links</h3>
-    <ul>
-      <li>
-        <a href="https://vuejs.org" target="_blank" rel="noopener">Core Docs</a>
-      </li>
-      <li>
-        <a href="https://forum.vuejs.org" target="_blank" rel="noopener"
-          >Forum</a
-        >
-      </li>
-      <li>
-        <a href="https://chat.vuejs.org" target="_blank" rel="noopener"
-          >Community Chat</a
-        >
-      </li>
-      <li>
-        <a href="https://twitter.com/vuejs" target="_blank" rel="noopener"
-          >Twitter</a
-        >
-      </li>
-      <li>
-        <a href="https://news.vuejs.org" target="_blank" rel="noopener">News</a>
-      </li>
-    </ul>
-    <h3>Ecosystem</h3>
-    <ul>
-      <li>
-        <a href="https://router.vuejs.org" target="_blank" rel="noopener"
-          >vue-router</a
-        >
-      </li>
-      <li>
-        <a href="https://vuex.vuejs.org" target="_blank" rel="noopener">vuex</a>
-      </li>
-      <li>
-        <a
-          href="https://github.com/vuejs/vue-devtools#vue-devtools"
-          target="_blank"
-          rel="noopener"
-          >vue-devtools</a
-        >
-      </li>
-      <li>
-        <a href="https://vue-loader.vuejs.org" target="_blank" rel="noopener"
-          >vue-loader</a
-        >
-      </li>
-      <li>
-        <a
-          href="https://github.com/vuejs/awesome-vue"
-          target="_blank"
-          rel="noopener"
-          >awesome-vue</a
-        >
-      </li>
-    </ul>
   </div>
 </template>
 
@@ -114,36 +72,97 @@ export default {
   },
   data() {
     return {
-      operand1: 0,
-      operand2: 0,
+      operand1: "",
+      operand2: "",
       result: 0,
+      error: "",
+      myCollection: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+      operands: ["+", "-", "*", "/"],
+      logs: {},
+      fibResult: 0,
+      clicked: true,
+      picked: "",
     };
   },
   methods: {
-    minus(op1, op2) {
-      this.result = op1 - op2;
+    addNumber(item, picked) {
+      if (picked == "operand1") {
+        this.operand1 = `${this.operand1}${item}`;
+      } else {
+        this.operand2 = `${this.operand2}${item}`;
+      }
     },
-    multiply(op1, op2) {
-      this.result = op1 * op2;
+    removeNumber(picked) {
+      if (picked == "operand1") {
+        this.operand1 = this.operand1.slice(0, -1);
+      } else {
+        this.operand2 = this.operand2.slice(0, -1);
+      }
     },
-    divide(op1, op2) {
-      this.result = parseInt(op1 / op2);
+    fib(n) {
+      return n <= 1 ? n : this.fib(n - 1) + this.fib(n - 2);
     },
-    // keyUpMethod() {
-    //   console.log("keyup");
-    // },
-    // mouseOverMethos() {
-    //   console.log("mouse");
-    // },
-    // countMulti() {
-    //   this.counter = this.counter * 2;
-    // },
+    calculate(operation = "+") {
+      this.error = "";
+      switch (operation) {
+        case "+":
+          this.add();
+          break;
+        case "-":
+          this.substract();
+          break;
+        case "*":
+          this.multiply();
+          break;
+        case "/":
+          this.divide();
+          break;
+      }
+      const key = Date.now();
+      const value = `${this.operand1} ${operation} ${this.operand2} = ${this.result}`;
+      this.$set(this.logs, key, value);
+      // this.logs[
+      //   Date.now()
+      // ] = `${this.operand1} ${operation} ${this.operand2} = ${this.result}`;
+    },
+    add() {
+      this.result = this.operand1 + this.operand2;
+      this.fibResult = this.fibb1 + this.fibb2;
+    },
+    substract() {
+      this.result = this.operand1 - this.operand2;
+      this.fibResult = this.fibb1 - this.fibb2;
+    },
+    multiply() {
+      this.result = this.operand1 * this.operand2;
+      this.fibResult = this.fibb1 * this.fibb2;
+    },
+    divide() {
+      const { operand2 } = this;
+      if (operand2 === 0) {
+        this.error = "Делить на 0 нельзя!";
+      } else {
+        this.result = parseInt(this.operand1 / this.operand2);
+        this.fibResult = this.fibb1 / this.fibb2;
+      }
+    },
+   },
+  computed: {
+    fibb1() {
+      return this.fib(this.operand1);
+    },
+    fibb2() {
+      return this.fib(this.operand2);
+    },
   },
 };
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+.myCollection {
+  display: inline-block;
+}
 h3 {
   margin: 40px 0 0;
 }
